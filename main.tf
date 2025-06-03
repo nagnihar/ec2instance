@@ -63,3 +63,35 @@ resource "aws_security_group" "allow_web_ssh_8080" {
     Name = "allow_web_ssh_8080"
   }
 }
+
+
+#### creation of s3 bucket
+
+resource "aws_s3_bucket" "terraform_state_bucket" {
+  bucket = "my-terraform-backup-bucket-12345678"
+  acl    = "private"
+
+  tags = {
+    Name = "Terraform State Bucket"
+  }
+}
+
+#### s3 bucket versioning enabled.
+resource "aws_s3_bucket_versioning" "versioning_example" {
+  bucket = aws_s3_bucket.terraform_state_bucket.id
+
+  versioning_configuration {
+    status = "Enabled"
+  }
+}
+##### migrate s3 bucket to terraform.
+terraform {
+  backend "s3" {
+    bucket         = "my-terraform-backup-bucket-12345678"
+    key            = "terraform/state/terraform.tfstate"
+    region         = "us-west-2"
+    encrypt        = true
+  }
+}
+
+
